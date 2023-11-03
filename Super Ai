@@ -1,0 +1,48 @@
+import pyaudio
+print(pyaudio._version_)
+import speech_recognition as sr
+from gtts import gTTS
+import os
+import pyaudio
+
+# Initialize the recognizer and microphone
+recognizer = sr.Recognizer()
+microphone = sr.AudioFile('temp_audio.wav')  # Create a temporary audio file
+
+# Function to recognize speech
+def listen_for_command():
+    with microphone as source:
+        print("Listening for a command...")
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+        try:
+            command = recognizer.recognize_google(audio)
+            print("You: " + command)
+            return command.lower()
+        except sr.UnknownValueError:
+            print("Sorry, I couldn't understand the audio.")
+            return ""
+        except sr.RequestError as e:
+            print(f"Could not request results; {e}")
+            return ""
+
+# Function to respond with text-to-speech
+def respond_with_text(response_text):
+    tts = gTTS(text=response_text, lang='en')
+    tts.save("response.mp3")
+    os.system("mpg123 response.mp3")  # You may need to install mpg123
+
+# Main loop for voice assistant
+print("Voice Assistant: Hello! How can I assist you today?")
+print("You can say 'exit' to end the conversation.")
+
+while True:
+    command = listen_for_command()
+    if command == 'exit':
+        break
+    # Add your logic to respond to specific commands here
+    response = "Voice Assistant: You said, '" + command + "'"
+    print(response)
+    respond_with_text(response)
+
+print("Voice Assistant: Goodbye!")
